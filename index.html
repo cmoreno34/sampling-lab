@@ -1,0 +1,293 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sampling lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#f4f2ea;--panel:#fbfaf5;--ink:#17251d;--soft:#4a5a50;--leaf:#2f6b4f;--leaf-ink:#21503b;
+  --clay:#bd5f3f;--line:#ddd8c9;--sage:#e7ece3;--chip:#eef1e8;--shadow:0 1px 2px rgba(23,37,29,.06),0 8px 24px rgba(23,37,29,.06);
+  --c1:#3b6fb5;--c2:#2f8f8f;--c3:#c9702f;--c4:#7a6bd0;--c5:#b0466b;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#111713;--panel:#18211b;--ink:#eef1ea;--soft:#a7b7ac;--leaf:#6bbd93;--leaf-ink:#8fd3ac;
+  --clay:#e08a68;--line:#2a352d;--sage:#1e2922;--chip:#212c25;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+  --c1:#6ea8e6;--c2:#63c6c6;--c3:#e0a44f;--c4:#b0a6d6;--c5:#dd7ea0;}}
+:root[data-theme="dark"]{
+  --ground:#111713;--panel:#18211b;--ink:#eef1ea;--soft:#a7b7ac;--leaf:#6bbd93;--leaf-ink:#8fd3ac;
+  --clay:#e08a68;--line:#2a352d;--sage:#1e2922;--chip:#212c25;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+  --c1:#6ea8e6;--c2:#63c6c6;--c3:#e0a44f;--c4:#b0a6d6;--c5:#dd7ea0;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:Archivo,system-ui,sans-serif;line-height:1.55;padding-inline:clamp(16px,4vw,40px)}
+.wrap{max-width:820px;margin:0 auto}
+header{padding-block:30px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.brandline{font:600 12px/1 Archivo;letter-spacing:.14em;text-transform:uppercase;color:var(--leaf);margin:0 0 8px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:900;font-size:clamp(26px,5vw,36px);line-height:1.04;margin:0}
+.themebtn{background:var(--panel);border:1px solid var(--line);color:var(--soft);border-radius:999px;padding:6px 13px;font:500 13px Archivo;cursor:pointer}
+.sub{font-size:14px;color:var(--soft);margin:16px 0 4px}
+.pick{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+.pk{flex:1;min-width:160px;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:.12s}
+.pk:hover{border-color:var(--leaf)}.pk[aria-pressed="true"]{border-color:var(--leaf);background:var(--sage);box-shadow:var(--shadow)}
+.pk b{font-family:Fraunces,serif;font-weight:900;font-size:16px;display:block}.pk span{font-size:12px;color:var(--soft)}
+.case{background:var(--sage);border:1px solid var(--line);border-radius:14px;padding:15px 18px;margin:12px 0 6px;font-size:14.5px}
+.who{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 4px}
+.who label{display:flex;flex-direction:column;gap:4px;font:700 10.5px Archivo;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.who input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:400 14px Archivo;background:var(--panel);color:var(--ink);min-width:200px}
+.step{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c,var(--leaf));border-radius:12px;padding:16px 18px;margin:15px 0;box-shadow:var(--shadow)}
+.step h2{font-family:Fraunces,serif;font-weight:900;font-size:19px;margin:0 0 3px;display:flex;align-items:center;gap:10px}
+.step h2 .n{background:var(--c,var(--leaf));color:#fff;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.step .lead{color:var(--soft);font-size:13px;margin:0 0 12px}
+label.fl{display:block;font:700 11px Archivo;letter-spacing:.06em;text-transform:uppercase;margin:8px 0 6px}
+input.txt,textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--ground);color:var(--ink);padding:10px 12px;font:400 14px/1.5 Archivo;resize:none}
+textarea{overflow:hidden;min-height:52px}
+input.txt:focus,textarea:focus,select:focus{outline:none;border-color:var(--c,var(--leaf))}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
+.chip1{border:1px solid var(--line);background:var(--ground);border-radius:999px;padding:7px 13px;font:600 13px Archivo;cursor:pointer;color:var(--ink)}
+.chip1[aria-pressed="true"]{background:var(--c2);border-color:var(--c2);color:#fff}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:4px 0 10px}
+.calc label{font:700 10.5px Archivo;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:block;margin-bottom:4px}
+.nout{background:var(--sage);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:6px 0 2px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.nout .big{font-family:Fraunces,serif;font-weight:900;font-size:40px;color:var(--leaf-ink);line-height:1}
+.nout .lbl{font-size:13px;color:var(--soft)}
+.qtable{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+.qtable th,.qtable td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+.qtable th{font:700 11px Archivo;letter-spacing:.04em;text-transform:uppercase;color:var(--soft);background:var(--sage)}
+.qtable input{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:400 14px Archivo;background:var(--ground);color:var(--ink)}
+.qtable td.tgt{font-weight:700;color:var(--leaf-ink);text-align:right}
+.qtable td .rm{border:0;background:transparent;color:var(--clay);cursor:pointer;font:700 15px Archivo}
+.qsum{font:700 13px Archivo;margin:4px 0}.qsum.ok{color:var(--leaf)}.qsum.bad{color:var(--clay)}
+.check{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.check label{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;cursor:pointer}.check input{margin-top:3px}
+.copybtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 13px;font:600 12.5px Archivo;cursor:pointer;margin:2px 0 10px}
+.copybtn:hover{border-color:var(--leaf)}
+pre.prompt{background:#14211b;color:#e8efe6;border-radius:10px;padding:14px;margin:0 0 10px;font:400 12px/1.6 ui-monospace,monospace;white-space:pre-wrap}
+.btn{background:var(--leaf);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:700 13.5px Archivo;cursor:pointer}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:22px 0 6px}
+.pdf{background:var(--clay);color:#fff;border:0;border-radius:10px;padding:13px 24px;font:700 15px Archivo;cursor:pointer}
+.ghost{background:transparent;border:1px solid var(--line);color:var(--soft);border-radius:10px;padding:12px 16px;font:600 13px Archivo;cursor:pointer}
+.saved{font-size:12px;color:var(--soft)}.hint{font-size:12.5px;color:var(--clay);margin:4px 0 0}
+.printonly{display:none}
+@media print{
+  header .themebtn,.pick,.chips,.copybtn,pre.prompt,.step .lead,.bar,.btn,.qtable td .rm{display:none!important}
+  body{background:#fff;color:#000;padding:0}.step{border:1px solid #bbb;border-left:5px solid #666;break-inside:avoid;box-shadow:none}
+  textarea,input.txt,select,.qtable input{border-color:#bbb;background:#fff;color:#000}
+  .printonly{display:block;margin-bottom:10px;border-bottom:2px solid #2f6b4f;padding-bottom:6px}
+}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div><p class="brandline">Estudios de Mercado I · Tema 7 · Applied sampling</p>
+  <h1>Sampling lab</h1></div>
+  <button class="themebtn" id="theme">◐ Theme</button>
+</header>
+<div class="printonly"><div style="font:700 11px Archivo;letter-spacing:.1em;text-transform:uppercase;color:#2f6b4f">Estudios de Mercado I · Tema 7 — Sampling plan (applied sampling)</div></div>
+
+<p class="sub"><b>Design a sample that lets the client decide.</b> Pick a case, define the population, choose the method, <b>size the sample</b> (the formula does the maths), <b>build the quotas</b> (it allocates them for you), name the errors to guard against, and download the plan. A good plan can say WHO the sample is, HOW it was obtained, and WITH WHAT LIMITS.</p>
+<div class="pick" id="pick"></div>
+<div class="case" id="casebox"></div>
+
+<div class="who">
+  <label>Name / group <input id="w_name" placeholder="Group 3 — A. García"></label>
+  <label>Date <input id="w_date" placeholder="dd/mm/yyyy"></label>
+</div>
+
+<div class="step" style="--c:var(--c1)">
+  <h2><span class="n">1</span> From universe to sample</h2>
+  <p class="lead">Every study narrows the universe to the people you will actually interview. Define three things precisely — get these wrong and a huge sample still gives wrong conclusions.</p>
+  <label class="fl" for="w_pop">Population / universe (who exactly, where, what age)</label>
+  <textarea id="w_pop" placeholder="e.g. People aged 18–55 resident in Spain who run at least once a month."></textarea>
+  <label class="fl" for="w_frame">Sampling frame (the list or source you select from)</label>
+  <textarea id="w_frame" placeholder="e.g. An online panel that can locate runners; or Decathlon's member base (watch the frame bias)."></textarea>
+  <label class="fl" for="w_unit">Unit of analysis (who answers / what you measure)</label>
+  <textarea id="w_unit" placeholder="e.g. The individual runner — not the purchase, not the store."></textarea>
+</div>
+
+<div class="step" style="--c:var(--c2)">
+  <h2><span class="n">2</span> Choose the method — and justify it</h2>
+  <p class="lead">No method is universally best; the right one answers the decision defensibly. Ask: do I need to generalise with a margin of error? do I have a usable frame? is the public easy to reach?</p>
+  <div class="chips" id="methods"></div>
+  <label class="fl" for="w_method">Why this method fits the decision</label>
+  <textarea id="w_method" placeholder="e.g. Quota sampling: no clean frame of urban runners exists, but we can fill age×sex quotas from the public reference so the sample looks like the target."></textarea>
+</div>
+
+<div class="step" style="--c:var(--c3)">
+  <h2><span class="n">3</span> Size the sample — the formula does the maths</h2>
+  <p class="lead">Sample size is a trade-off of precision, confidence, how divided the answers are, and budget. Set the inputs; n updates live. Leave population blank for a very large population.</p>
+  <div class="calc">
+    <div><label for="cl">Confidence</label><select id="cl"><option value="1.645">90%</option><option value="1.96" selected>95%</option><option value="2.576">99%</option></select></div>
+    <div><label for="moe">Margin of error ±</label><select id="moe"><option>3</option><option selected>5</option><option>7</option><option>10</option></select></div>
+    <div><label for="pp">Expected % (p)</label><select id="pp"><option value="50" selected>50% (safest)</option><option value="40">40 / 60</option><option value="30">30 / 70</option><option value="20">20 / 80</option></select></div>
+    <div><label for="pn">Population size N (optional)</label><input class="txt" id="pn" inputmode="numeric" placeholder="e.g. 8000 — blank = very large"></div>
+  </div>
+  <div class="nout"><span class="big" id="nval">—</span><span class="lbl" id="nexpl">interviews needed</span></div>
+  <p class="hint" style="color:var(--soft)">Rule of thumb for market studies: n≈100 exploratory (high error) · n≈400 the usual balance · n≈1000 more precision, more cost. A bigger sample never fixes a bad frame or a leading question.</p>
+</div>
+
+<div class="step" style="--c:var(--c4)">
+  <h2><span class="n">4</span> Build the quotas — it allocates n for you</h2>
+  <p class="lead">Quotas make the sample LOOK like the public. Enter each group and its reference share of the population; the tool splits your n proportionally. The shares should add to 100%.</p>
+  <table class="qtable" id="qtable"><thead><tr><th>Group (stratum)</th><th style="width:120px">Reference %</th><th style="width:90px">Target</th><th style="width:34px"></th></tr></thead><tbody id="qbody"></tbody></table>
+  <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+    <button class="btn" type="button" id="qadd">+ Add group</button>
+    <span class="qsum" id="qsum"></span>
+  </div>
+  <p class="hint" style="color:var(--soft)">A quota is a field-control rule: define it before, monitor it during, and explain it when you report. Quotas correct visible imbalances — they do not remove every selection bias.</p>
+</div>
+
+<div class="step" style="--c:var(--c5)">
+  <h2><span class="n">5</span> Errors to guard against</h2>
+  <p class="lead">Sampling error shrinks with n; <b>non-sampling error does not</b> — it can bias a result even at n = 10,000. Tick the threats you will design against, and say how.</p>
+  <div class="check" id="errs"></div>
+  <label class="fl" for="w_errfix">How you'll reduce the ones that matter</label>
+  <textarea id="w_errfix" placeholder="e.g. Coverage: recruit beyond our own app so non-customers are reachable. Non-response: short survey, reminders. Measurement: neutral wording, pretest."></textarea>
+</div>
+
+<div class="step" style="--c:var(--c2)">
+  <h2><span class="n">6</span> Review it with AI, then hand it in</h2>
+  <p class="lead">The prompt below carries your whole plan. Ask AI to stress-test it — where could it still go wrong, and what would you tell the client about the limits?</p>
+  <button class="copybtn" id="copyprompt">copy the "stress-test my sampling plan" prompt</button>
+  <pre class="prompt" id="prompt"></pre>
+  <label class="fl" for="w_limits">What you'd tell the client: who the sample is, how it was obtained, and its limits</label>
+  <textarea id="w_limits" style="min-height:80px" placeholder="e.g. 600 urban runners 18–55 from an online panel, age×sex quotas to the national reference, ±4% at 95%. Limit: panel under-covers non-digital runners; results describe digital urban runners, not all runners."></textarea>
+</div>
+
+<div class="bar">
+  <button class="pdf" id="pdf">⬇ Download PDF</button>
+  <button class="ghost" id="clear">Clear worksheet</button>
+  <span class="saved" id="saved">Saved in this browser</span>
+</div>
+<p class="hint">One case = one PDF. <b>Download before switching case or clearing.</b> We only accept conclusions if you can say whose they are, how they were obtained, and with what limits.</p>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const CASES={
+ decathlon:{name:"Decathlon 🏃",tag:"urban running",
+   brief:"Decathlon wants to understand what stops urban runners from buying more running gear, among people 18–55 in Spain who run at least monthly. Design the sample to answer it.",
+   pop:"People 18–55 resident in Spain who run at least once a month.",unit:"The individual runner.",N:""},
+ vinted:{name:"Vinted 👕",tag:"second-hand fashion",
+   brief:"Vinted wants to know what stops 18–34s in Spain from buying second-hand fashion, to decide between a national campaign for new buyers or improving trust/delivery. Compare buyers vs non-buyers; results in 3 weeks.",
+   pop:"People 18–34 resident in Spain.",unit:"The individual shopper.",N:""},
+ own:{name:"Your own 📋",tag:"your group project",
+   brief:"Use your group project's case. Define its population, frame and unit, then design the sample that lets the client decide.",
+   pop:"",unit:"",N:""}
+};
+const METHODS=["Simple random","Systematic","Stratified","Quota","Convenience","Snowball"];
+const ERRORS=[
+ ["Coverage (sampling frame)","Part of the public can't enter the sample — the frame misses them.","non-sampling"],
+ ["Non-response","Certain profiles drop out, so who answers differs from who you asked.","non-sampling"],
+ ["Measurement","A leading or misunderstood question distorts the answer.","non-sampling"],
+ ["Processing","Bad coding or a wrong database corrupts the result.","non-sampling"],
+ ["Sampling (random)","Pure chance: the sample differs from the population. Shrinks with n + probability selection.","sampling"]
+];
+const KEY='mkt3600_sampling';
+let current='decathlon';
+function val(id){const e=$('#'+id);return e?e.value.trim():'';}
+function autogrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';}
+
+// case picker
+const pick=$('#pick');
+Object.entries(CASES).forEach(([k,c])=>{const b=document.createElement('button');b.className='pk';b.type='button';b.dataset.k=k;
+  b.innerHTML=`<b>${c.name}</b><span>${c.tag}</span>`;b.onclick=()=>{current=k;syncPick();renderCase();applyCase();refreshPrompt();save();};pick.appendChild(b);});
+function syncPick(){[...pick.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===current));}
+function renderCase(){const c=CASES[current];$('#casebox').innerHTML=`<b>Case — ${c.name}.</b> ${c.brief}`;}
+function applyCase(){const c=CASES[current];if(c.pop&&!val('w_pop')){$('#w_pop').value=c.pop;}if(c.unit&&!val('w_unit')){$('#w_unit').value=c.unit;}autoAll();}
+
+// methods chips
+const methEl=$('#methods');
+METHODS.forEach(t=>{const b=document.createElement('button');b.className='chip1';b.type='button';b.textContent=t;b.setAttribute('aria-pressed','false');
+  b.onclick=()=>{[...methEl.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');refreshPrompt();save();};methEl.appendChild(b);});
+function chosenMethod(){const a=[...methEl.children].find(b=>b.getAttribute('aria-pressed')==='true');return a?a.textContent:'';}
+
+// n calculator
+function calcN(){
+  const z=parseFloat($('#cl').value), e=parseFloat($('#moe').value)/100, p=parseFloat($('#pp').value)/100;
+  let n0=(z*z*p*(1-p))/(e*e);
+  const N=parseInt(($('#pn').value||'').replace(/\D/g,''));
+  let n=n0, fpc=false;
+  if(N&&N>0){ n=n0/(1+(n0-1)/N); fpc=true; }
+  n=Math.ceil(n);
+  $('#nval').textContent=n;
+  $('#nexpl').innerHTML=`valid interviews needed · ±${$('#moe').value}% at ${({'1.645':'90','1.96':'95','2.576':'99'})[$('#cl').value]}% confidence`+(fpc?` · finite-population corrected for N=${N.toLocaleString()}`:'');
+  return n;
+}
+function nTarget(){ return parseInt($('#nval').textContent)||0; }
+
+// quota builder
+let quotas = [{g:'',r:''}];
+function renderQuotas(){
+  const n=nTarget();
+  $('#qbody').innerHTML=quotas.map((q,i)=>{
+    const tgt = (q.r!==''&&!isNaN(parseFloat(q.r))) ? Math.round(n*parseFloat(q.r)/100) : '—';
+    return `<tr><td><input data-q="${i}" data-f="g" value="${esc(q.g)}" placeholder="e.g. 18–29"></td>
+      <td><input data-q="${i}" data-f="r" value="${esc(q.r)}" inputmode="decimal" placeholder="%"></td>
+      <td class="tgt">${tgt}</td><td><button class="rm" data-rm="${i}" title="remove">✕</button></td></tr>`;
+  }).join('');
+  const sum=quotas.reduce((a,q)=>a+(parseFloat(q.r)||0),0);
+  const tsum=quotas.reduce((a,q)=>a+((q.r!==''&&!isNaN(parseFloat(q.r)))?Math.round(n*parseFloat(q.r)/100):0),0);
+  const el=$('#qsum');
+  el.textContent=`reference total: ${sum.toFixed(0)}% ${Math.abs(sum-100)<0.5?'✓':'(should be 100%)'} · quota targets sum to ${tsum} of ${n}`;
+  el.className='qsum '+(Math.abs(sum-100)<0.5?'ok':'bad');
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+$('#qadd').onclick=()=>{quotas.push({g:'',r:''});renderQuotas();save();};
+$('#qbody').addEventListener('input',e=>{const i=e.target.dataset.q;if(i!==undefined){quotas[i][e.target.dataset.f]=e.target.value;renderQuotas.timer&&clearTimeout(renderQuotas.timer);renderQuotas.timer=setTimeout(()=>{renderQuotas();refreshPrompt();},400);save();}});
+$('#qbody').addEventListener('click',e=>{const i=e.target.dataset.rm;if(i!==undefined){quotas.splice(i,1);if(!quotas.length)quotas=[{g:'',r:''}];renderQuotas();refreshPrompt();save();}});
+
+// errors checklist
+$('#errs').innerHTML=ERRORS.map((e,i)=>`<label><input type="checkbox" data-err="${i}"> <span><b>${esc(e[0])}</b> <span style="color:var(--soft)">(${e[2]})</span> — ${esc(e[1])}</span></label>`).join('');
+function chosenErrors(){return [...document.querySelectorAll('[data-err]')].filter(c=>c.checked).map(c=>ERRORS[c.dataset.err][0]);}
+
+// prompt
+function buildPrompt(){
+  const c=CASES[current];const n=nTarget();
+  const q=quotas.filter(x=>x.g&&x.r).map(x=>`${x.g}: ${x.r}% (target ${Math.round(n*parseFloat(x.r)/100)})`).join('; ')||'[quotas not set]';
+  return `Act as a market research sampling expert. Stress-test my sampling plan for this case and tell me where it could still go wrong.
+
+CASE: ${c.brief}
+Population: ${val('w_pop')||'[not set]'}
+Sampling frame: ${val('w_frame')||'[not set]'}
+Unit of analysis: ${val('w_unit')||'[not set]'}
+Method: ${chosenMethod()||'[not chosen]'} — because ${val('w_method')||'[not justified]'}
+Sample size: ${n||'[not set]'} (±${$('#moe').value}% at ${({'1.645':'90','1.96':'95','2.576':'99'})[$('#cl').value]}% confidence, p=${$('#pp').value}%${($('#pn').value?`, N=${$('#pn').value}`:'')})
+Quotas: ${q}
+Errors I will guard against: ${chosenErrors().join(', ')||'[none ticked]'} — ${val('w_errfix')||''}
+
+1) Is the method defensible for THIS decision? If not, what would you use?
+2) Where is the frame weak — who does it miss, and which conclusions would that bias?
+3) Is the sample size reasonable for the decision, and do the quotas look right?
+4) Name the two biggest NON-SAMPLING threats here and how to reduce each.
+5) Write the honest limits sentence I should give the client: who the sample is, how it was obtained, and what it does NOT represent.
+Use only my plan; do not invent data.`;
+}
+function refreshPrompt(){$('#prompt').textContent=buildPrompt();}
+
+// persistence
+const ids=['w_name','w_date','w_pop','w_frame','w_unit','w_method','pn','w_errfix','w_limits'];
+const sels=['cl','moe','pp'];
+function autoAll(){document.querySelectorAll('textarea').forEach(autogrow);}
+let st;
+function save(){clearTimeout(st);st=setTimeout(()=>{const o={_case:current,_method:chosenMethod(),_quotas:quotas,_errs:chosenErrors(),_sel:{}};
+  ids.forEach(i=>o[i]=val(i));sels.forEach(s=>o._sel[s]=$('#'+s).value);
+  try{localStorage.setItem(KEY,JSON.stringify(o));$('#saved').textContent='Saved ✓ '+new Date().toLocaleTimeString();}catch(_){}} ,300);}
+(function init(){let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(_){}
+  if(s._case&&CASES[s._case])current=s._case;
+  ids.forEach(i=>{const el=$('#'+i);if(!el)return;el.value=s[i]||'';
+    el.addEventListener('input',()=>{if(el.tagName==='TEXTAREA')autogrow(el);save();if(i==='pn'){calcN();renderQuotas();}refreshPrompt();});
+    if(el.tagName==='TEXTAREA')autogrow(el);});
+  sels.forEach(id=>{if(s._sel&&s._sel[id])$('#'+id).value=s._sel[id];$('#'+id).addEventListener('change',()=>{calcN();renderQuotas();refreshPrompt();save();});});
+  if(s._quotas&&s._quotas.length)quotas=s._quotas;
+  if(s._method)[...methEl.children].forEach(b=>{if(b.textContent===s._method)b.setAttribute('aria-pressed','true');});
+  if(s._errs)[...document.querySelectorAll('[data-err]')].forEach(c=>{if(s._errs.includes(ERRORS[c.dataset.err][0]))c.checked=true;});
+  document.querySelectorAll('[data-err]').forEach(c=>c.addEventListener('change',()=>{refreshPrompt();save();}));
+  syncPick();renderCase();calcN();renderQuotas();refreshPrompt();autoAll();
+})();
+function copy(text,btn){const o=btn.textContent;const ok=()=>{btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1200);};
+  const fb=()=>{try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.top='-1000px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);ok();}catch(_){btn.textContent='Ctrl+C';}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok).catch(fb);}else{fb();}}
+$('#copyprompt').onclick=e=>copy(buildPrompt(),e.currentTarget);
+$('#pdf').onclick=()=>{if(!val('w_date'))$('#w_date').value=new Date().toLocaleDateString();window.print();};
+$('#clear').onclick=()=>{if(confirm('Clear the worksheet? Download your PDF first if you need it.')){localStorage.removeItem(KEY);location.reload();}};
+const root=document.documentElement;$('#theme').onclick=()=>{const c=root.getAttribute('data-theme');root.setAttribute('data-theme',c==='dark'?'light':c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));};
+</script>
+</body></html>
