@@ -67,11 +67,21 @@ pre.prompt{background:#14211b;color:#e8efe6;border-radius:10px;padding:14px;marg
 .ghost{background:transparent;border:1px solid var(--line);color:var(--soft);border-radius:10px;padding:12px 16px;font:600 13px Archivo;cursor:pointer}
 .saved{font-size:12px;color:var(--soft)}.hint{font-size:12.5px;color:var(--clay);margin:4px 0 0}
 .printonly{display:none}
+#printout{display:none}
 @media print{
-  header .themebtn,.pick,.chips,.copybtn,pre.prompt,.step .lead,.bar,.btn,.qtable td .rm{display:none!important}
-  body{background:#fff;color:#000;padding:0}.step{border:1px solid #bbb;border-left:5px solid #666;break-inside:avoid;box-shadow:none}
-  textarea,input.txt,select,.qtable input{border-color:#bbb;background:#fff;color:#000}
-  .printonly{display:block;margin-bottom:10px;border-bottom:2px solid #2f6b4f;padding-bottom:6px}
+  @page{margin:14mm}
+  .wrap{display:none!important}
+  #printout{display:block!important}
+  body{background:#fff;color:#000;padding:0;font:11pt/1.4 Archivo}
+  #printout h1{font:700 17pt Fraunces,serif;margin:0 0 2mm;border-bottom:1.5pt solid #000;padding-bottom:2mm}
+  #printout h2{font:700 13.5pt Fraunces,serif;margin:7mm 0 1mm;color:#21503b;border-bottom:.5pt solid #999;padding-bottom:1mm}
+  #printout .pid{font-size:10pt;margin:0 0 3mm;color:#444}
+  #printout .blk{margin:1.6mm 0;break-inside:avoid}
+  #printout .blk b{font-size:8.5pt;text-transform:uppercase;letter-spacing:.03em;color:#555}
+  #printout table{border-collapse:collapse;margin:2mm 0;font-size:9.5pt;width:100%}
+  #printout th,#printout td{border:.5pt solid #999;padding:1.4mm 2.5mm;text-align:left}
+  #printout .case-sec{break-before:page}
+  #printout .case-sec:first-of-type{break-before:auto}
 }
 </style></head>
 <body><div class="wrap">
@@ -152,12 +162,14 @@ pre.prompt{background:#14211b;color:#e8efe6;border-radius:10px;padding:14px;marg
 </div>
 
 <div class="bar">
-  <button class="pdf" id="pdf">⬇ Download PDF</button>
-  <button class="ghost" id="clear">Clear worksheet</button>
+  <button class="pdf" id="pdf">⬇ Download this case</button>
+  <button class="btn" id="pdfall" style="padding:13px 20px">⬇ Download all cases</button>
+  <button class="ghost" id="clear">Clear all</button>
   <span class="saved" id="saved">Saved in this browser</span>
 </div>
-<p class="hint">One case = one PDF. <b>Download before switching case or clearing.</b> We only accept conclusions if you can say whose they are, how they were obtained, and with what limits.</p>
+<p class="hint">Each case saves on its own — switch cases freely, nothing is lost. <b>Download this case</b> prints the one on screen; <b>Download all cases</b> prints every case you've filled in. We only accept conclusions if you can say whose they are, how they were obtained, and with what limits.</p>
 </div>
+<div id="printout"></div>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -188,7 +200,7 @@ function autogrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px
 // case picker
 const pick=$('#pick');
 Object.entries(CASES).forEach(([k,c])=>{const b=document.createElement('button');b.className='pk';b.type='button';b.dataset.k=k;
-  b.innerHTML=`<b>${c.name}</b><span>${c.tag}</span>`;b.onclick=()=>{current=k;syncPick();renderCase();applyCase();refreshPrompt();save();};pick.appendChild(b);});
+  b.innerHTML=`<b>${c.name}</b><span>${c.tag}</span>`;b.onclick=()=>{STORE.cases[current]=collectCase();current=k;STORE._case=k;syncPick();renderCase();loadCase(k);save();};pick.appendChild(b);});
 function syncPick(){[...pick.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===current));}
 function renderCase(){const c=CASES[current];$('#casebox').innerHTML=`<b>Case — ${c.name}.</b> ${c.brief}`;}
 function applyCase(){const c=CASES[current];if(c.pop&&!val('w_pop')){$('#w_pop').value=c.pop;}if(c.unit&&!val('w_unit')){$('#w_unit').value=c.unit;}autoAll();}
@@ -262,32 +274,70 @@ Use only my plan; do not invent data.`;
 }
 function refreshPrompt(){$('#prompt').textContent=buildPrompt();}
 
-// persistence
-const ids=['w_name','w_date','w_pop','w_frame','w_unit','w_method','pn','w_errfix','w_limits'];
+// persistence — per case
+const CF=['w_pop','w_frame','w_unit','w_method','pn','w_errfix','w_limits']; // per-case fields
 const sels=['cl','moe','pp'];
+const SELDEF={cl:'1.96',moe:'5',pp:'50'};
 function autoAll(){document.querySelectorAll('textarea').forEach(autogrow);}
+let STORE={};try{STORE=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(_){}
+STORE.cases=STORE.cases||{};
+function collectCase(){const o={method:chosenMethod(),quotas:JSON.parse(JSON.stringify(quotas)),errs:chosenErrors(),sel:{}};
+  CF.forEach(i=>o[i]=val(i));sels.forEach(s=>o.sel[s]=$('#'+s).value);return o;}
 let st;
-function save(){clearTimeout(st);st=setTimeout(()=>{const o={_case:current,_method:chosenMethod(),_quotas:quotas,_errs:chosenErrors(),_sel:{}};
-  ids.forEach(i=>o[i]=val(i));sels.forEach(s=>o._sel[s]=$('#'+s).value);
-  try{localStorage.setItem(KEY,JSON.stringify(o));$('#saved').textContent='Saved ✓ '+new Date().toLocaleTimeString();}catch(_){}} ,300);}
-(function init(){let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(_){}
-  if(s._case&&CASES[s._case])current=s._case;
-  ids.forEach(i=>{const el=$('#'+i);if(!el)return;el.value=s[i]||'';
-    el.addEventListener('input',()=>{if(el.tagName==='TEXTAREA')autogrow(el);save();if(i==='pn'){calcN();renderQuotas();}refreshPrompt();});
-    if(el.tagName==='TEXTAREA')autogrow(el);});
-  sels.forEach(id=>{if(s._sel&&s._sel[id])$('#'+id).value=s._sel[id];$('#'+id).addEventListener('change',()=>{calcN();renderQuotas();refreshPrompt();save();});});
-  if(s._quotas&&s._quotas.length)quotas=s._quotas;
-  if(s._method)[...methEl.children].forEach(b=>{if(b.textContent===s._method)b.setAttribute('aria-pressed','true');});
-  if(s._errs)[...document.querySelectorAll('[data-err]')].forEach(c=>{if(s._errs.includes(ERRORS[c.dataset.err][0]))c.checked=true;});
+function save(){clearTimeout(st);st=setTimeout(()=>{
+  STORE.cases[current]=collectCase();STORE.w_name=val('w_name');STORE.w_date=val('w_date');STORE._case=current;
+  try{localStorage.setItem(KEY,JSON.stringify(STORE));$('#saved').textContent='Saved ✓ '+new Date().toLocaleTimeString();}catch(_){}} ,300);}
+function loadCase(k){const d=STORE.cases[k]||{};
+  CF.forEach(i=>{const el=$('#'+i);if(el)el.value=d[i]||'';});
+  sels.forEach(s=>{$('#'+s).value=(d.sel&&d.sel[s])||SELDEF[s];});
+  quotas=(d.quotas&&d.quotas.length)?JSON.parse(JSON.stringify(d.quotas)):[{g:'',r:''}];
+  [...methEl.children].forEach(b=>b.setAttribute('aria-pressed',(d.method||'')===b.textContent?'true':'false'));
+  document.querySelectorAll('[data-err]').forEach(c=>{c.checked=(d.errs||[]).includes(ERRORS[c.dataset.err][0]);});
+  applyCase();calcN();renderQuotas();refreshPrompt();autoAll();}
+(function init(){
+  if(STORE._case&&CASES[STORE._case])current=STORE._case;
+  $('#w_name').value=STORE.w_name||'';$('#w_date').value=STORE.w_date||'';
+  ['w_name','w_date'].forEach(i=>$('#'+i).addEventListener('input',save));
+  CF.forEach(i=>{const el=$('#'+i);if(!el)return;
+    el.addEventListener('input',()=>{if(el.tagName==='TEXTAREA')autogrow(el);save();if(i==='pn'){calcN();renderQuotas();}refreshPrompt();});});
+  sels.forEach(id=>$('#'+id).addEventListener('change',()=>{calcN();renderQuotas();refreshPrompt();save();}));
   document.querySelectorAll('[data-err]').forEach(c=>c.addEventListener('change',()=>{refreshPrompt();save();}));
-  syncPick();renderCase();calcN();renderQuotas();refreshPrompt();autoAll();
+  syncPick();renderCase();loadCase(current);
 })();
 function copy(text,btn){const o=btn.textContent;const ok=()=>{btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1200);};
   const fb=()=>{try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.top='-1000px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);ok();}catch(_){btn.textContent='Ctrl+C';}};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok).catch(fb);}else{fb();}}
 $('#copyprompt').onclick=e=>copy(buildPrompt(),e.currentTarget);
-$('#pdf').onclick=()=>{if(!val('w_date'))$('#w_date').value=new Date().toLocaleDateString();window.print();};
-$('#clear').onclick=()=>{if(confirm('Clear the worksheet? Download your PDF first if you need it.')){localStorage.removeItem(KEY);location.reload();}};
+
+// ---- printable output (one case or all) ----
+function nFromCase(d){const z=parseFloat((d.sel&&d.sel.cl)||'1.96'),e=parseFloat((d.sel&&d.sel.moe)||'5')/100,p=parseFloat((d.sel&&d.sel.pp)||'50')/100;
+  let n0=(z*z*p*(1-p))/(e*e);const N=parseInt((d.pn||'').replace(/\D/g,''));let n=n0,fpc=false;
+  if(N&&N>0){n=n0/(1+(n0-1)/N);fpc=true;}return{n:Math.ceil(n),fpc,N,cl:({'1.645':'90','1.96':'95','2.576':'99'})[(d.sel&&d.sel.cl)||'1.96'],moe:(d.sel&&d.sel.moe)||'5',pp:(d.sel&&d.sel.pp)||'50'};}
+function hasData(d){return d&&(CF.some(i=>d[i])||(d.quotas||[]).some(q=>q.g||q.r)||(d.errs||[]).length||d.method);}
+function blk(t,b){return `<div class="blk"><b>${t}:</b> ${b||'—'}</div>`;}
+function caseSection(k,d){const c=CASES[k];const r=nFromCase(d);
+  const qrows=(d.quotas||[]).filter(q=>q.g&&q.r).map(q=>`<tr><td>${esc(q.g)}</td><td>${esc(q.r)}%</td><td>${Math.round(r.n*parseFloat(q.r)/100)}</td></tr>`).join('');
+  return `<div class="case-sec"><h2>Case — ${esc(c.name.replace(/[^\x00-\x7F]/g,'').trim())}</h2>
+   <div class="blk">${esc(c.brief)}</div>
+   ${blk('Population',esc(d.w_pop))}${blk('Sampling frame',esc(d.w_frame))}${blk('Unit of analysis',esc(d.w_unit))}
+   ${blk('Method',esc(d.method)+(d.w_method?(' — '+esc(d.w_method)):''))}
+   ${blk('Sample size',`<b>n = ${r.n}</b> — ±${r.moe}% at ${r.cl}% confidence, p=${r.pp}%`+(r.fpc?`, finite-population corrected for N=${r.N.toLocaleString()}`:''))}
+   ${qrows?`<div class="blk"><b>Quotas:</b></div><table><tr><th>Group</th><th>Reference %</th><th>Target (of ${r.n})</th></tr>${qrows}</table>`:''}
+   ${blk('Errors guarded against',(d.errs||[]).join(', ')+(d.w_errfix?(' — '+esc(d.w_errfix)):''))}
+   ${blk('What we tell the client (limits)',esc(d.w_limits))}</div>`;}
+function buildPrintout(keys){
+  STORE.cases[current]=collectCase();
+  let h=`<h1>Sampling plan — Estudios de Mercado I · Tema 7</h1>
+    <div class="pid">Name / group: ${esc(val('w_name')||'—')} &nbsp;·&nbsp; Date: ${esc(val('w_date')||new Date().toLocaleDateString())}</div>`;
+  const used=keys.filter(k=>hasData(STORE.cases[k]));
+  if(!used.length){h+='<div class="blk">No case filled in yet.</div>';}
+  used.forEach(k=>h+=caseSection(k,STORE.cases[k]));
+  $('#printout').innerHTML=h;
+}
+$('#pdf').onclick=()=>{if(!val('w_date'))$('#w_date').value=new Date().toLocaleDateString();buildPrintout([current]);window.print();};
+$('#pdfall').onclick=()=>{if(!val('w_date'))$('#w_date').value=new Date().toLocaleDateString();buildPrintout(Object.keys(CASES));window.print();};
+$('#clear').onclick=()=>{if(confirm('Clear ALL cases on this page?')){localStorage.removeItem(KEY);location.reload();}};
+window.addEventListener('beforeprint',()=>{if(!$('#printout').innerHTML.trim())buildPrintout([current]);});
 const root=document.documentElement;$('#theme').onclick=()=>{const c=root.getAttribute('data-theme');root.setAttribute('data-theme',c==='dark'?'light':c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));};
 </script>
 </body></html>
